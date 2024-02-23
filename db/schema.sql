@@ -5,12 +5,17 @@ USE custom_employee_tracker_db;
 
 CREATE TABLE department (
 	id INT NOT NULL,
-	name VARCHAR(30) NOT NULL
+	name VARCHAR(30) NOT NULL,
+	PRIMARY KEY(id)
 );
 
 CREATE TABLE roles (
 	id INT NOT NULL,
-	name VARCHAR(30) NOT NULL
+	job_title VARCHAR(30) NOT NULL,
+	dept VARCHAR(30) NOT NULL,
+	salary INT NOT NULL,
+	FOREIGN KEY(id)
+	REFERENCES department(id)
 );
 
 CREATE TABLE employees (
