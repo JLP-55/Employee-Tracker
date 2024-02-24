@@ -19,8 +19,8 @@ VALUES	(1, "CEO", "dept", 60),
 -- 		(2, "HR", "dept_two", 150000),
 -- 		(3, "JANITOR" "dept_three", 99999999999999999999999);
 
-INSERT INTO employees (id, name)
-VALUES 	(1, "Dave"),
-		(2, "Steve"),
-		(3, "Tracy");
+INSERT INTO employees (id, name, role, manager)
+VALUES 	(1, "Dave", "CEO", "no_manager"),
+		(2, "Steve", "janitor", "CEO"),
+		(3, "Tracy", "HR", "CEO");
 	

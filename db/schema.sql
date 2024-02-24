@@ -20,5 +20,7 @@ CREATE TABLE roles (
 
 CREATE TABLE employees (
 	id INT NOT NULL,
-	name VARCHAR(25) NOT NULL
+	name VARCHAR(25) NOT NULL,
+	role VARCHAR(25) NOT NULL,
+	manager VARCHAR(25) NOT NULL
 );

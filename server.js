@@ -112,6 +112,41 @@ function updateRole () {
         })
 }
 
+const selectionEmployee = [
+    {
+        type: "input",
+        name: "employeeId",
+        message: "employees id"
+    }, 
+    {
+        type: "input",
+        name: "employeeName",
+        message: "employees full name"
+    },
+    {
+        type: "input",
+        name: "employeeRole",
+        message: "employees role"
+    },
+    {
+        type: "input",
+        name: "employeeManager",
+        message: "employees manager"
+    }
+]
+
+function updateEmployee () {
+    inquirer.prompt(selectionEmployee)
+        .then((response) => {
+            db.query(`
+                INSERT INTO employees (id, name, role, manager)
+                VALUES (${response.employeeId}, "${response.employeeName.replaceAll(" ", "_")}", "${response.employeeRole.replaceAll(" ","_")}", "${response.employeeManager.replaceAll(" ","_")}");`)
+            db.query("SELECT * FROM employees", (err, results) => {
+                console.log(results);
+            })
+        })
+}
+
 inquirer.prompt(selectionArray)
     .then((response) => {
 
@@ -147,6 +182,8 @@ inquirer.prompt(selectionArray)
 
         } else if (response.allItems === "Add an employee") {
             console.log("adding and employee ");
+            updateEmployee();
+            
         } else if (response.allItems === "Updata an employee role") {
             console.log("updating employee roles");
         };
