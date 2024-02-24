@@ -4,10 +4,10 @@ VALUES 	(1, "dept_1"),
 		(3, "dept_3");
 
 
-INSERT INTO roles (id, job_title, dept, salary)
-VALUES	(1, "CEO", "dept", 60),
-		(2, "HR", "dept", 60),
-		(3, "JANITOR", "dept", 60);
+INSERT INTO roles (id, job_title, dept_id, salary)
+VALUES	(1, "CEO", 1, 60),
+		(2, "HR", 2, 60),
+		(3, "JANITOR", 3, 60);
 
 -- INSERT INTO roles (id, job_title, dept, salary)
 -- VALUES 	(1, "CEO", "dept", 100000),
@@ -19,8 +19,8 @@ VALUES	(1, "CEO", "dept", 60),
 -- 		(2, "HR", "dept_two", 150000),
 -- 		(3, "JANITOR" "dept_three", 99999999999999999999999);
 
-INSERT INTO employees (id, name, role, manager)
-VALUES 	(1, "Dave", "CEO", "no_manager"),
-		(2, "Steve", "janitor", "CEO"),
-		(3, "Tracy", "HR", "CEO");
+INSERT INTO employees (id, name, role_id, manager_id)
+VALUES 	(1, "Dave", 1, 1),
+		(2, "Steve", 2, 2),
+		(3, "Tracy", 3, 3);
 	

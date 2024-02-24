@@ -5,22 +5,28 @@ USE custom_employee_tracker_db;
 
 CREATE TABLE department (
 	id INT NOT NULL,
-	name VARCHAR(30) NOT NULL
-	-- PRIMARY KEY(id)
+	name VARCHAR(30) NOT NULL,
+	PRIMARY KEY(id)
 );
 
 CREATE TABLE roles (
 	id INT NOT NULL /*AUTO_INCREMENT*/,
 	job_title VARCHAR(30) NOT NULL,
-	dept VARCHAR(30) NOT NULL,
-	salary INT NOT NULL
-	-- FOREIGN KEY(id)
-	-- REFERENCES department(id)
+	dept_id INT NOT NULL,
+	salary INT NOT NULL,
+	PRIMARY KEY(id),
+	FOREIGN KEY(dept_id)
+	REFERENCES department(id)
 );
 
 CREATE TABLE employees (
 	id INT NOT NULL,
 	name VARCHAR(25) NOT NULL,
-	role VARCHAR(25) NOT NULL,
-	manager VARCHAR(25) NOT NULL
+	role_id INT NOT NULL,
+	manager_id INT,
+	PRIMARY KEY(id),
+	FOREIGN KEY(role_id)
+	REFERENCES roles(id)
+	-- FOREIGN KEY(manager_id)
+	-- REFERENCES employees(id)
 );
