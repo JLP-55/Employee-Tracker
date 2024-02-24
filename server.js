@@ -1,37 +1,7 @@
 // Required node packages
 const inquirer = require("inquirer");
-const mysql = require("mysql2");
-
-// code to try and get sequelize to work
-// const sequelize = require("sequelize");
-
-// const Sequelize = require("sequelize");
-// require("dotenv").config();
-// sequelize.sync().then(() => {
-//     const sequelize = new sequelize(
-//         process.env.DB_USER,
-//         process.env.DB_NAME,
-//         process.env.DB_PASSWORD,
-
-//         {
-//             host: "localhost",
-//         // user: "root",
-//         // password: "0912",
-//         // database: "custom_employee_tracker_db"
-//         },
-//     );
-// })
-
-// Create a connection to the mysql server using the variable db
-const db = mysql.createConnection (
-    {
-        host: "localhost",
-        user: "root",
-        password: "0912",
-        database: "custom_employee_tracker_db"
-    },
-    console.log("Connected successfully")
-);
+// const mysql = require("mysql2");
+const db = require("./config/connection")
 
 // These questions will be passed the the inquirer prompt.
 // Depending on the user selection, different responses will be displayed in the terminal
@@ -65,7 +35,7 @@ const selectionDept = [
     }
 ]
 
-function updateDept () {
+function addDept () {
     inquirer.prompt(selectionDept) 
         .then((response) => {
             db.query(`
@@ -100,7 +70,7 @@ const selectionRole = [
     }
 ]
 
-function updateRole () {
+function addRole () {
     inquirer.prompt(selectionRole)
         .then((response) => {
             db.query(`
@@ -135,13 +105,34 @@ const selectionEmployee = [
     }
 ]
 
-function updateEmployee () {
+function addEmployee () {
     inquirer.prompt(selectionEmployee)
         .then((response) => {
             db.query(`
                 INSERT INTO employees (id, name, role, manager)
                 VALUES (${response.employeeId}, "${response.employeeName.replaceAll(" ", "_")}", "${response.employeeRole.replaceAll(" ","_")}", "${response.employeeManager.replaceAll(" ","_")}");`)
             db.query("SELECT * FROM employees", (err, results) => {
+                console.log(results);
+            })
+        })
+}
+
+const selectionUpdateEmployee = [
+
+    {
+        type: "list",
+        name: "employeeSelection",
+        choices: 
+        [
+            `${db.query(`SELECT name FROM employees;`)}`
+        ]
+    }
+]
+
+function updateEmployee () {
+    inquirer.prompt(selectionUpdateEmployee)
+        .then((response) => {
+            db.query("SELECT * FROM employees;", (err, results) => {
                 console.log(results);
             })
         })
@@ -174,27 +165,18 @@ inquirer.prompt(selectionArray)
 
         } else if (response.allItems === "Add a department") {
             console.log("adding departments");
-            updateDept();
+            addDept();
 
         } else if (response.allItems === "Add a role") {
             console.log("adding a role");
-            updateRole();
+            addRole();
 
         } else if (response.allItems === "Add an employee") {
             console.log("adding and employee ");
-            updateEmployee();
-            
-        } else if (response.allItems === "Updata an employee role") {
-            console.log("updating employee roles");
-        };
-		
-    })
-   // .then(function (response) {
-   //      if (response.confirmItems === "y") {
-   //          console.log("hello");
-   //      }
+            addEmployee();
 
-        // if (db.query) {
-        //   process.exit(0);
-        // };
-	// });
+        } else if (response.allItems === "Update an employee role") {
+            console.log("updating employee roles");
+            updateEmployee();
+        };	
+    })

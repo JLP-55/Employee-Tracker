@@ -4,13 +4,13 @@ CREATE DATABASE custom_employee_tracker_db;
 USE custom_employee_tracker_db;
 
 CREATE TABLE department (
-	id INT NOT NULL,
+	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(30) NOT NULL,
 	PRIMARY KEY(id)
 );
 
 CREATE TABLE roles (
-	id INT NOT NULL /*AUTO_INCREMENT*/,
+	id INT NOT NULL AUTO_INCREMENT,
 	job_title VARCHAR(30) NOT NULL,
 	dept_id INT NOT NULL,
 	salary INT NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE roles (
 );
 
 CREATE TABLE employees (
-	id INT NOT NULL,
+	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(25) NOT NULL,
 	role_id INT NOT NULL,
 	manager_id INT,
