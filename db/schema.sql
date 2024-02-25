@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS custom_employee_tracker_db;
-CREATE DATABASE custom_employee_tracker_db;
+DROP DATABASE IF EXISTS employee_tracker_db;
+CREATE DATABASE employee_tracker_db;
 
-USE custom_employee_tracker_db;
+USE employee_tracker_db;
 
 CREATE TABLE department (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -23,7 +23,7 @@ CREATE TABLE employees (
 	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(25) NOT NULL,
 	role_id INT NOT NULL,
-	manager_id INT,
+	manager_id INT AUTO_INCREMENT,
 	PRIMARY KEY(id),
 	FOREIGN KEY(role_id)
 	REFERENCES roles(id)

@@ -25,11 +25,11 @@ const selectionArray = [
 ]
 
 const selectionDept = [
-    {
-        type: "input",
-        name: "id",
-        message: "enter the dept id"
-    },
+    // {
+    //     type: "input",
+    //     name: "id",
+    //     message: "enter the dept id"
+    // },
     {
         type: "input",
         name: "name",
@@ -54,8 +54,8 @@ function addDept () {
     inquirer.prompt(selectionDept) 
         .then((response) => {
             db.query(`
-                INSERT INTO department (id, name) 
-                VALUES (${response.id}, "${response.name.replaceAll(" ", "_")}");`)
+                INSERT INTO department (name) 
+                VALUES ("${response.name.replaceAll(" ", "_")}");`)
             db.query("SELECT * FROM department;", (err, results) => {
                 console.table(results);
             });
@@ -70,11 +70,11 @@ function addDept () {
 }
 
 const selectionRole = [
-    {
-        type: "input",
-        name: "id",
-        message: "please enter the id..."
-    },
+    // {
+    //     type: "input",
+    //     name: "id",
+    //     message: "please enter the id..."
+    // },
     {
         type: "input",
         name: "name",
@@ -96,10 +96,10 @@ function addRole () {
     inquirer.prompt(selectionRole)
         .then((response) => {
             db.query(`
-                INSERT INTO roles (id, job_title, dept, salary)
-                VALUES (${response.id},"${response.name}","${response.department}","${response.salary}");`)
+                INSERT INTO roles (job_title, dept_id, salary)
+                VALUES ("${response.name}", ${response.department}, ${response.salary});`)
             db.query("SELECT * FROM roles", (err, results) => {
-                console.log(results);
+                console.table(results);
             })
         })
         // prompt();
@@ -175,7 +175,7 @@ function prompt () {
             db.query("SELECT * FROM department;", (err, results) => {
                 console.log("");
                 console.log("===================");
-                console.log("Viewing all departments");
+                console.log("VIEWING ALL DEPARTMENTS");
                 console.log("===================");
                 console.table(results);
                 console.log("===================");
@@ -184,22 +184,50 @@ function prompt () {
 
         } else if (response.allItems === "View all roles") {
 
-            db.query("SELECT * FROM roles;", (err, results) => {
-                console.log("");
-                console.log("===============================");
-                console.log("all roles");
-                console.log("===============================");
-                console.table(results);
-                console.log("===============================");
+            db.query(`
+                    SELECT 
+                        t2.id AS role_id,
+                        t2.job_title, 
+                        t2.salary,
+                        t1.name AS linked_department
+                    FROM
+                        roles t2
+                    JOIN
+                        department t1
+                    ON
+                        t2.dept_id = t1.id;`, 
+
+                    (err, results) => {
+
+                    console.log("");
+                    console.log("===============================");
+                    console.log("VIEWING ALL ROLES");
+                    console.log("===============================");
+                    console.table(results);
+                    console.log("===============================");
             });
             prompt();
 
         } else if (response.allItems === "View all employees") {
 
-            db.query("SELECT * FROM employees", (err, results) => {
+            db.query(`
+                    SELECT
+                        t2.id AS employee_id,
+                        t2.name AS employee_name,
+                        t1.job_title,
+                        t1.dept_id AS department_id,
+                        t1.salary,
+                        t2.manager_id
+                    FROM
+                        employees t2
+                    JOIN
+                        roles t1
+                    ON
+                        t2.role_id = t1.id;`, 
+                (err, results) => {
                 console.log("");
                 console.log("==============================");
-                console.log("all employees");
+                console.log("VIEWING ALL EMPLOYEES");
                 console.log("==============================");
                 console.table(results);
                 console.log("==============================");
@@ -227,6 +255,7 @@ function prompt () {
     });
 };
 
+// code to initialise the app, so that the callback to prompt can only run once
 const initArray = [
     {
         type: "confirm",
