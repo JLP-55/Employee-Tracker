@@ -29,7 +29,7 @@ const selectionDept = [
     {
         type: "input",
         name: "name",
-        message: "enter the dept name"
+        message: "enter the department name"
     }
 ];
 
@@ -68,12 +68,16 @@ const selectionRole = [
 function addRole () {
     // query the database to return all the values needed to display to the user their selection for adding a role
     db.query("SELECT * FROM department", (err, results) => {
-        if (err) {throw err;}
+
+        if (err) {
+            throw err;
+        };
+
         console.log("original", results)
 
         // create a variable and define it as a new array (.map)
         // return the required values, ie, department name and id
-        let departmentList =  results.map((dept) => {
+        let departmentList = results.map((dept) => {
             return {
                 name: dept.name,
                 value: dept.id
@@ -87,7 +91,7 @@ function addRole () {
             {
                 type: "list",
                 name: "department",
-                message: "Which department",
+                message: "Which department does the new role belong to?",
                 choices: departmentList
             }
         );
@@ -131,80 +135,154 @@ const selectionEmployee = [
         name: "lastName",
         message: "employees last name"
     },
-    // {
-    //     type: "input",
-    //     name: "employeeRole",
-    //     message: "employees role id"
-    // },
-    // {
-    //     type: "input",
-    //     name: "employeeManager",
-    //     message: "employees manager id"
-    // }
 ];
 
 function addEmployee () {
 
-    db.query(`SELECT * FROM employees;`, (err, results) => {
-        if (err) {
-            throw err;
-        };
-        // console.log(results)
-        let databaseResults = results.map((item) => {
-            return {
-                manager: item.manager_id
-            }
-        })
-        console.log(databaseResults);
-        selectionEmployee.push(
-        {
-            type: "list",
-            name: "employeeManager",
-            message: "enter manager name",
-            choices: databaseResults
-        })
-    })
+    // select, map and push all names from the employees table for the user to select as their manager,
+    // making sure to return a name and value pair for use in the inquirer choices for the list type
+   db.query(`SELECT * FROM employees;`, (err, results) => {
 
-    inquirer.prompt(selectionEmployee)
-        .then((response) => {
-            db.query(`
-                INSERT INTO employees (first_name, last_name, manager_id)
-                VALUES ("${response.firstName.replaceAll(" ","_")}", "${response.lastName.replaceAll(" ","_")}", ${response.employeeRole}, ${response.employeeManager});`)
-            db.query("SELECT * FROM employees", (err, results) => {
-                console.table(results);
-                prompt();
+        let databaseResultsManager = results.map((employee) => {
+            return {
+                name: employee.first_name,
+                value: employee.manager_id
+            };
+        });
+
+        console.log("new!", databaseResultsManager);
+
+        selectionEmployee.push(
+            {
+                type: "list",
+                name: "employeeManager",
+                message: "enter manager name",
+                choices: databaseResultsManager
+            }
+        );
+
+        db.query(`SELECT * FROM department t1 JOIN roles t2 ON t1.id = t2.dept_id;`, (err, results) => {
+
+            if (err) {
+                throw err;
+            };
+
+            console.log("original", results);
+
+            let databaseResultsRole = results.map((role) => {
+                return {
+                    name: role.job_title,
+                    value: role.dept_id
+                }
+            });
+
+            console.log("new!", databaseResultsRole);
+
+            selectionEmployee.push(
+                {
+                    type: "list",
+                    name: "employeeRole",
+                    message: "what is the employees role?",
+                    choices: databaseResultsRole
+                }
+            );
+
+            // pass in the selectionEmployees array to inquirer, and then query the database in the response, 
+            // insert into the employees table, all relevant values.
+            // then query the database, selecting * from employees console.table the results and call the prompt function
+            inquirer.prompt(selectionEmployee)
+            .then((response) => {
+                db.query(`
+                    INSERT INTO employees (first_name, last_name, role_id, manager_id)
+                    VALUES ("${response.firstName.replaceAll(" ","_")}", "${response.lastName.replaceAll(" ","_")}", ${response.employeeRole}, ${response.employeeManager});`, (err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+                    })
+                db.query("SELECT * FROM employees", (err, results) => {
+                    console.table(results);
+                    prompt();
+                });
             });
         });
+    });
 };
 
+// update an employee
 const selectionUpdateEmployee = [
 
-    {
-        type: "list",
-        name: "employeeSelection",
-        choices: 
-        [
-            
-        ]
-        }
+    // {
+    //     type: "list",
+    //     name: "employeeSelection",
+    //     message: "mesage",
+    //     choices: 
+    //     [
+    //         "choice",
+    //         "choice",
+    //         "choice"
+    //     ]
+    // }
 ]
 
 function updateEmployee () {
 
-    db.query(`SELECT CONCAT (first_name, " ", last_name) FROM employees;`, (err, results) => {
+    db.query(`SELECT t1.job_title, t2.first_name, t2.id, t2.role_id FROM roles t1 JOIN employees t2 ON t1.id = t2.role_id;`, (err, results) => {
         if (err) {
             throw err;
         };
-        console.log(results);
-    })
+        // console.log(results);
 
-    inquirer.prompt(selectionUpdateEmployee)
+        let updateEmployeeResultsName = results.map((updateEmployee) => {
+            return {
+                name: updateEmployee.first_name,
+                value: updateEmployee.id            
+            }
+        })
+
+        console.log(updateEmployeeResultsName);
+
+        selectionUpdateEmployee.push(
+        {
+            type: "list",
+            name: "name",
+            message: "what employee's role do you want to update?",
+            choices: updateEmployeeResultsName
+        })
+
+        let updateEmployeeResultsRole = results.map((updateEmployee) => {
+            return {
+                name: updateEmployee.job_title,
+                value: updateEmployee.role_id
+            }
+        })
+
+        console.log(updateEmployeeResultsRole);
+
+        selectionUpdateEmployee.push(
+            {
+                type: "list",
+                name: "role",
+                message: "what new role are you assigning to the employee?",
+                choices: updateEmployeeResultsRole
+            }
+        )
+
+        inquirer.prompt(selectionUpdateEmployee)
         .then((response) => {
-            db.query("SELECT * FROM employees;", (err, results) => {
-                console.log(results);
-                // prompt();
+            console.log(response)
+            db.query(`UPDATE employees SET role_id = ${response.role} WHERE id = ${response.name};`, (err, results) => {
+                if (err) {
+                    throw err;
+                }
+                // console.table(results);
+                db.query("SELECT t1.first_name, t1.last_name, t1.manager_id AS manager, t2.job_title AS title FROM employees t1 JOIN roles t2 ON t1.id = t2.id;", (err, results) => {
+                    console.table(results);
+                    prompt();
+                });
             });
         });
+    });
+
 };
 
 function prompt () {
@@ -228,10 +306,10 @@ function prompt () {
 
             db.query(`
                     SELECT 
-                        t2.id AS role_id,
-                        t2.job_title, 
-                        t2.salary,
-                        t1.name AS linked_department
+                        t2.id,
+                        t2.job_title AS title, 
+                        t1.name AS department,
+                        t2.salary
                     FROM
                         roles t2
                     JOIN
@@ -252,13 +330,13 @@ function prompt () {
 
             db.query(`
                     SELECT
-                        t2.id AS employee_id,
+                        t2.id,
                         t2.first_name,
                         t2.last_name,
-                        t1.job_title,
+                        t1.job_title AS title,
                         t3.name AS department,
                         t1.salary,
-                        CONCAT (t4.first_name, " ", t4.last_name) AS manager_name
+                        CONCAT (t4.first_name, " ", t4.last_name) AS manager
                     FROM
                         employees t2
                     JOIN
@@ -278,11 +356,11 @@ function prompt () {
                         throw err;
                     };
                 console.log("");
-                console.log("================================================================================");
-                console.log("                             VIEWING ALL EMPLOYEES");
-                console.log("================================================================================");
+                console.log("===========================================================================");
+                console.log("                          VIEWING ALL EMPLOYEES");
+                console.log("===========================================================================");
                 console.table(results);
-                console.log("================================================================================");
+                console.log("===========================================================================");
                 prompt();
             });
 
