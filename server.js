@@ -1,11 +1,9 @@
 // Required node packages
 const inquirer = require("inquirer");
-// const mysql = require("mysql2");
 const db = require("./config/connection");
 require("console.table");
 
-// These questions will be passed the the inquirer prompt.
-// Depending on the user selection, different responses will be displayed in the terminal
+// Main questions array
 const selectionArray = [
     {
         type: "list",
@@ -40,7 +38,12 @@ function addDept () {
                 INSERT INTO department (name) 
                 VALUES ("${response.name.replaceAll(" ", "_")}");`)
             db.query("SELECT * FROM department;", (err, results) => {
+                console.log("");
+                console.log("===============");
+                console.log("   VIEWING\nALL DEPARTMENTS");
+                console.log("===============");
                 console.table(results);
+                console.log("===============");
                 prompt();
             });
         });
@@ -53,11 +56,6 @@ const selectionRole = [
         name: "name",
         message: "please enter the name of your new role"
     }, 
-    // {
-    //     type: "input",
-    //     name: "department",
-    //     message: "please enter the department id your new role belongs to"
-    // },
     {
         type: "input",
         name: "salary",
@@ -73,8 +71,6 @@ function addRole () {
             throw err;
         };
 
-        console.log("original", results)
-
         // create a variable and define it as a new array (.map)
         // return the required values, ie, department name and id
         let departmentList = results.map((dept) => {
@@ -83,8 +79,6 @@ function addRole () {
                 value: dept.id
             };
         });
-
-        console.log("new!", departmentList);
 
         // push the new variable department list onto the selectionRole array so that the user can see the values to be selected in inquirer.prompt
         selectionRole.push(
@@ -98,7 +92,7 @@ function addRole () {
    
         inquirer.prompt(selectionRole)
         .then((response) => {
-            // console.log(response)
+
             db.query(`
                 INSERT INTO roles (job_title, dept_id, salary)
                 VALUES ("${response.name.replaceAll(" ", "_")}", ${response.department}, ${response.salary});`)
@@ -146,11 +140,9 @@ function addEmployee () {
         let databaseResultsManager = results.map((employee) => {
             return {
                 name: employee.first_name,
-                value: employee.manager_id
+                value: employee.role_id
             };
         });
-
-        console.log("new!", databaseResultsManager);
 
         selectionEmployee.push(
             {
@@ -167,16 +159,12 @@ function addEmployee () {
                 throw err;
             };
 
-            console.log("original", results);
-
             let databaseResultsRole = results.map((role) => {
                 return {
                     name: role.job_title,
                     value: role.dept_id
                 }
             });
-
-            console.log("new!", databaseResultsRole);
 
             selectionEmployee.push(
                 {
@@ -189,7 +177,7 @@ function addEmployee () {
 
             // pass in the selectionEmployees array to inquirer, and then query the database in the response, 
             // insert into the employees table, all relevant values.
-            // then query the database, selecting * from employees console.table the results and call the prompt function
+            // then query the database, selecting relevant info from employees, console.table the results and call the prompt function
             inquirer.prompt(selectionEmployee)
             .then((response) => {
                 db.query(`
@@ -198,31 +186,51 @@ function addEmployee () {
                         if (err) {
                             throw err;
                         }
-                    })
-                db.query("SELECT * FROM employees", (err, results) => {
-                    console.table(results);
-                    prompt();
-                });
+                    });
+
+                 db.query(`
+                    SELECT
+                        t2.id,
+                        t2.first_name,
+                        t2.last_name,
+                        t1.job_title AS title,
+                        t3.name AS department,
+                        t1.salary,
+                        CONCAT (t4.first_name, " ", t4.last_name) AS manager
+                    FROM
+                        employees t2
+                    JOIN
+                        roles t1
+                    ON
+                        t2.role_id = t1.id
+                    JOIN
+                        department t3
+                    ON
+                        t1.dept_id = t3.id
+                    LEFT JOIN
+                        employees t4
+                    ON
+                        t2.manager_id = t4.id;`,
+                (err, results) => {
+                    if (err) {
+                        throw err;
+                    };
+                console.log("");
+                console.log("===========================================================================");
+                console.log("                          VIEWING ALL EMPLOYEES");
+                console.log("===========================================================================");
+                console.table(results);
+                console.log("===========================================================================");
+                prompt();
+            });
+
             });
         });
     });
 };
 
 // update an employee
-const selectionUpdateEmployee = [
-
-    // {
-    //     type: "list",
-    //     name: "employeeSelection",
-    //     message: "mesage",
-    //     choices: 
-    //     [
-    //         "choice",
-    //         "choice",
-    //         "choice"
-    //     ]
-    // }
-]
+const selectionUpdateEmployee = []
 
 function updateEmployee () {
 
@@ -230,7 +238,6 @@ function updateEmployee () {
         if (err) {
             throw err;
         };
-        // console.log(results);
 
         let updateEmployeeResultsName = results.map((updateEmployee) => {
             return {
@@ -238,8 +245,6 @@ function updateEmployee () {
                 value: updateEmployee.id            
             }
         })
-
-        console.log(updateEmployeeResultsName);
 
         selectionUpdateEmployee.push(
         {
@@ -256,8 +261,6 @@ function updateEmployee () {
             }
         })
 
-        console.log(updateEmployeeResultsRole);
-
         selectionUpdateEmployee.push(
             {
                 type: "list",
@@ -269,16 +272,47 @@ function updateEmployee () {
 
         inquirer.prompt(selectionUpdateEmployee)
         .then((response) => {
-            console.log(response)
             db.query(`UPDATE employees SET role_id = ${response.role} WHERE id = ${response.name};`, (err, results) => {
                 if (err) {
                     throw err;
                 }
-                // console.table(results);
-                db.query("SELECT t1.first_name, t1.last_name, t1.manager_id AS manager, t2.job_title AS title FROM employees t1 JOIN roles t2 ON t1.id = t2.id;", (err, results) => {
+
+                db.query(`
+                        SELECT
+                            t2.id,
+                            t2.first_name,
+                            t2.last_name,
+                            t1.job_title AS title,
+                            t3.name AS department,
+                            t1.salary,
+                            CONCAT (t4.first_name, " ", t4.last_name) AS manager
+                        FROM
+                            employees t2
+                        JOIN
+                            roles t1
+                        ON
+                            t2.role_id = t1.id
+                        JOIN
+                            department t3
+                        ON
+                            t1.dept_id = t3.id
+                        LEFT JOIN
+                            employees t4
+                        ON
+                            t2.manager_id = t4.id;`,
+                    (err, results) => {
+                        if (err) {
+                            throw err;
+                        };
+                    console.log("");
+                    console.log("===========================================================================");
+                    console.log("                          VIEWING ALL EMPLOYEES");
+                    console.log("===========================================================================");
                     console.table(results);
+                    console.log("===========================================================================");
                     prompt();
                 });
+            
             });
         });
     });
