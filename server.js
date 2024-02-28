@@ -96,23 +96,29 @@ function addRole () {
             db.query(`
                 INSERT INTO roles (job_title, dept_id, salary)
                 VALUES ("${response.name.replaceAll(" ", "_")}", ${response.department}, ${response.salary});`)
-            db.query(` 
+
+            db.query(`
                     SELECT 
-                        t2.id AS role_id,
-                        t2.job_title, 
-                        t2.salary,
-                        t1.name AS linked_department
+                        t2.id,
+                        t2.job_title AS title, 
+                        t1.name AS department,
+                        t2.salary
                     FROM
                         roles t2
                     JOIN
                         department t1
                     ON
-                        t2.dept_id = t1.id;`,                     
+                        t2.dept_id = t1.id;`, 
                 (err, results) => {
+                    console.log("");
+                    console.log("==============================================");
+                    console.log("              VIEWING ALL ROLES");
+                    console.log("==============================================");
                     console.table(results);
+                    console.log("==============================================");
                     prompt();
-                }    
-            );
+                });
+
         });
     });
 };
@@ -141,6 +147,7 @@ function addEmployee () {
             return {
                 name: employee.first_name,
                 value: employee.role_id
+                // value: employee.manager_id
             };
         });
 
