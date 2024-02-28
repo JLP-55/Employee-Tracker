@@ -13,6 +13,7 @@ const selectionArray = [
             "View all departments",
             "View all roles",
             "View all employees",
+            "View employees by department",
             "Add a department",
             "Add a role",
             "Add an employee",
@@ -402,6 +403,21 @@ function prompt () {
                 console.log("===========================================================================");
                 console.table(results);
                 console.log("===========================================================================");
+                prompt();
+            });
+
+        } else if (response.allItems === "View employees by department") {
+
+            db.query(`SELECT CONCAT (t1.first_name, " ", t1.last_name) AS name, t2.name AS department FROM employees t1 JOIN department t2 ON t1.role_id = t2.id;`, (err, results) => {
+                if (err) {
+                    throw err;
+                };
+                console.log("");
+                console.log("=====================================================");
+                console.log("         VIEWING ALL EMPLOYEES BY DEPARTMENT");
+                console.log("=====================================================");
+                console.table(results);
+                console.log("=====================================================");
                 prompt();
             });
 
